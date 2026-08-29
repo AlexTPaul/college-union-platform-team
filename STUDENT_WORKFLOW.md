@@ -120,5 +120,3 @@ The project should remain:
 - one shared backend
 - many student-owned feature branches
 - clean team-based integration
-
-This keeps the project modern, realistic, and easy to manage in a classroom team assignment.
