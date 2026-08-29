@@ -1,0 +1,7 @@
+import React from "react";
+import { useOutletContext } from "react-router-dom";
+import { CalendarDays, Clock3, MapPin } from "lucide-react";
+import { events } from "../../../data/demo/events";
+import { Card, PageHead } from "../../../components/common/PagePrimitives";
+import MediaPlaceholder from "../../../components/ui/MediaPlaceholder";
+export default function Events(){ const {notify}=useOutletContext(); return <><PageHead eyebrow="CAMPUS CALENDAR" title="Events" desc="Discover union, academic, cultural and sports events." action={<button className="primary" onClick={()=>notify("Demo: event creation opened")}>+ Create event</button>}/><div className="event-cards">{events.map((e,i)=><Card key={i}><div className="poster"><MediaPlaceholder label="This is the event poster."/><span>{e.tag}</span><div><small>{e.date}</small><b>{e.title.split(" ").slice(0,2).join(" ")}</b></div></div><div className="event-detail"><span className="pill">{e.tag}</span><h3>{e.title}</h3><p><Clock3 size={15}/> {e.time} · <MapPin size={15}/> {e.venue}</p><div><button className="primary small" onClick={()=>notify("Demo registration successful")}>Register</button><button className="ghost small" onClick={()=>notify("Demo: event details opened")}>Details</button></div></div></Card>)}</div></>}
