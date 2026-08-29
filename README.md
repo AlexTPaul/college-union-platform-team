@@ -135,8 +135,4 @@ Before a PR is merged, confirm:
 - API usage follows the contract
 - the branch is up to date with `main`
 
-## Why this setup works
 
-This gives the class a real team project where each student owns part of the app while the whole software stays integrated.
-
-For the full workflow details, see `STUDENT_WORKFLOW.md`.
