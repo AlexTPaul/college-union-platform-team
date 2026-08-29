@@ -56,17 +56,4 @@ npm run dev
 ## Important rule
 
 A team should normally modify only its `src/features/<module>/` folder and shared components when necessary. Do not put module UI into `main.jsx`.
-
-## Demo limitation
-
-The demo has no real backend, authentication, database, storage or push notifications. Existing buttons demonstrate UI behavior only.
-
-The next production step is to connect the services in `src/services/` and the data model to Supabase.
-
-
-## Demo media
-Any poster/cover/media area is represented by an explicit text placeholder. No external image files or URLs are required for the demo.
-
-
-## Blank-screen fix
-Shared JSX UI components explicitly import React for the classic JSX runtime: `Stat.jsx`, `Card.jsx`, `PageHead.jsx`, and `MediaPlaceholder.jsx`.
+.
