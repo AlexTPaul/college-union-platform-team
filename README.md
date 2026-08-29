@@ -58,3 +58,85 @@ npm run dev
 
 ## Important
 The frontend is demo-only until the real backend is connected. The backend starter should be treated as a shared service layer, not as isolated student projects.
+
+---
+
+# Student Team Workflow
+
+This project is meant to be worked on as one shared app by multiple students.
+
+## Team model
+
+- one shared frontend app
+- one shared backend project
+- many feature owners
+- one shared API contract
+
+Each student should work on a feature page or module instead of creating a separate app.
+
+## Working structure
+
+```text
+college-union-platform/
+├── frontend/
+│   └── src/features/
+│       ├── home/
+│       ├── events/
+│       ├── academics/
+│       ├── grievances/
+│       ├── admin/
+│       └── ...
+├── backend/
+│   └── supabase/
+├── contracts/
+│   └── API_CONTRACT.md
+├── docs/
+├── README.md
+├── STUDENT_WORKFLOW.md
+└── .gitignore
+```
+
+## Student roles
+
+Feature teams may own:
+- Home
+- Events and announcements
+- Grievances
+- Blood bank
+- Academics
+- Student welfare
+- Notifications
+- Admin and profile
+
+## Branching rule
+
+Every student should work from their own feature branch:
+
+```bash
+git checkout -b feature/home
+git checkout -b feature/events
+git checkout -b feature/academics
+git checkout -b feature/grievances
+```
+
+## Rules
+
+- Keep work inside your assigned feature folder.
+- Never edit unrelated feature pages without approval.
+- Keep shared routes and layouts under core-team control.
+- Match the API contract in `contracts/API_CONTRACT.md`.
+- Open a pull request before merging into `main`.
+
+## Review checklist
+
+Before a PR is merged, confirm:
+- the feature works in the shared app
+- no unrelated files were changed
+- API usage follows the contract
+- the branch is up to date with `main`
+
+## Why this setup works
+
+This gives the class a real team project where each student owns part of the app while the whole software stays integrated.
+
+For the full workflow details, see `STUDENT_WORKFLOW.md`.
