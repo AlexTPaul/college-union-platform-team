@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useOutletContext } from "react-router-dom";
-import { CalendarDays, Clock3, MapPin, AlertCircle } from "lucide-react";
+import { useOutletContext, useNavigate } from "react-router-dom";
+import { CalendarDays, Clock3, MapPin, AlertCircle, Lock } from "lucide-react";
 import { Card, PageHead } from "../../../components/common/PagePrimitives";
 import MediaPlaceholder from "../../../components/ui/MediaPlaceholder";
 import { eventsService } from "../../../services/api/eventsService";
+import { permissionService } from "../../../services/auth/permissionService";
 
 export default function EventsPage() {
-  const { notify } = useOutletContext();
+  const { notify, user } = useOutletContext();
+  const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -32,7 +34,35 @@ export default function EventsPage() {
     }
   };
 
+  const handleCreateEvent = () => {
+    const canCreate = permissionService.canPerformAction("CREATE_EVENT", user);
+    
+    if (!canCreate.allowed) {
+      if (canCreate.reason === "LOGIN_REQUIRED") {
+        notify("Please login to create events");
+        navigate("/login");
+      } else {
+        notify("Only admins can create events");
+      }
+      return;
+    }
+    
+    notify("Demo: event creation opened");
+  };
+
   const handleRegister = async (event) => {
+    const canRegister = permissionService.canPerformAction("REGISTER_EVENT", user);
+    
+    if (!canRegister.allowed) {
+      if (canRegister.reason === "LOGIN_REQUIRED") {
+        notify("Please login to register");
+        navigate("/login");
+      } else {
+        notify("You cannot register for this event");
+      }
+      return;
+    }
+
     try {
       const response = await eventsService.registerForEvent(event.id);
       if (response.ok) {
@@ -57,7 +87,11 @@ export default function EventsPage() {
         title="Events"
         desc="Discover union, academic, cultural and sports events."
         action={
-          <button className="primary" onClick={() => notify("Demo: event creation opened")}>
+          <button 
+            className="primary" 
+            onClick={handleCreateEvent}
+            disabled={!permissionService.hasPermission("CREATE_EVENT", user?.role)}
+          >
             + Create event
           </button>
         }
@@ -102,7 +136,8 @@ export default function EventsPage() {
                   <button
                     className="primary small"
                     onClick={() => handleRegister(e)}
-                    disabled={e.registered}
+                    disabled={e.registered || !permissionService.hasPermission("REGISTER_EVENT", user?.role)}
+                    title={!permissionService.hasPermission("REGISTER_EVENT", user?.role) ? "You cannot register" : ""}
                   >
                     {e.registered ? "Registered" : "Register"}
                   </button>

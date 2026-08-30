@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { useOutletContext } from "react-router-dom";
-import { ClipboardList, CheckCircle2, Clock3, AlertCircle } from "lucide-react";
+import { useOutletContext, useNavigate } from "react-router-dom";
+import { ClipboardList, CheckCircle2, Clock3, AlertCircle, Lock } from "lucide-react";
 import { Card, PageHead } from "../../../components/common/PagePrimitives";
 import { grievancesService } from "../../../services/api/grievancesService";
+import { permissionService } from "../../../services/auth/permissionService";
 
 export default function GrievancesPage() {
-  const { notify } = useOutletContext();
+  const { notify, user } = useOutletContext();
+  const navigate = useNavigate();
   const [grievances, setGrievances] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -31,7 +33,38 @@ export default function GrievancesPage() {
     }
   };
 
+  const handleNewGrievance = () => {
+    const canSubmit = permissionService.canPerformAction("SUBMIT_GRIEVANCE", user);
+    
+    if (!canSubmit.allowed) {
+      if (canSubmit.reason === "LOGIN_REQUIRED") {
+        notify("Please login to submit a grievance");
+        navigate("/login");
+      }
+      return;
+    }
+
+    notify("Demo: grievance form opened");
+  };
+
+  const handleUpdateGrievance = (grievanceId, newStatus) => {
+    const canUpdate = permissionService.canPerformAction("ACCEPT_GRIEVANCE", user);
+    
+    if (!canUpdate.allowed) {
+      notify("Only maintainers and admins can update grievances");
+      return;
+    }
+
+    setGrievances(
+      grievances.map((g) => 
+        g.id === grievanceId ? { ...g, status: newStatus } : g
+      )
+    );
+    notify(`Grievance ${grievanceId} updated to ${newStatus}`);
+  };
+
   const activeCount = grievances.filter((g) => g.status !== "resolved").length;
+  const canManageGrievances = permissionService.hasPermission("ACCEPT_GRIEVANCE", user?.role);
 
   return (
     <>
@@ -40,7 +73,7 @@ export default function GrievancesPage() {
         title="Grievances"
         desc="Raise an issue and track what happens next."
         action={
-          <button className="primary" onClick={() => notify("Demo: grievance form opened")}>
+          <button className="primary" onClick={handleNewGrievance}>
             + New grievance
           </button>
         }
@@ -83,9 +116,20 @@ export default function GrievancesPage() {
                   </b>
                   <span>Updated {g.updatedAt}</span>
                 </div>
-                <span className={"status " + (g.status === "resolved" ? "green" : "amber")}>
-                  {g.status.charAt(0).toUpperCase() + g.status.slice(1)}
-                </span>
+                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                  <span className={"status " + (g.status === "resolved" ? "green" : "amber")}>
+                    {g.status.charAt(0).toUpperCase() + g.status.slice(1)}
+                  </span>
+                  {canManageGrievances && g.status !== "resolved" && (
+                    <button
+                      className="ghost small"
+                      onClick={() => handleUpdateGrievance(g.id, "resolved")}
+                      title="Resolve this grievance"
+                    >
+                      ✓
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
         </Card>

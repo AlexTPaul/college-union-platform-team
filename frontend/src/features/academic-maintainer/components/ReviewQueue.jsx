@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { FileText, ShieldCheck, CheckCircle2, Flag, Clock3, AlertCircle } from "lucide-react";
+import { FileText, ShieldCheck, CheckCircle2, Flag, Clock3, AlertCircle, Lock } from "lucide-react";
 import { Card } from "../../../components/common/PagePrimitives";
 import { maintainerService } from "../../../services/api/maintainerService";
+import { permissionService } from "../../../services/auth/permissionService";
 
-export default function ReviewQueue({ notify }) {
+export default function ReviewQueue({ notify, user }) {
   const [pending, setPending] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -30,10 +31,17 @@ export default function ReviewQueue({ notify }) {
   };
 
   const handleApprove = async (materialId) => {
+    const canApprove = permissionService.canPerformAction("APPROVE_MATERIAL", user);
+    
+    if (!canApprove.allowed) {
+      notify("Only maintainers and admins can approve materials");
+      return;
+    }
+
     try {
       const response = await maintainerService.approveMaterial(materialId);
       if (response.ok) {
-        notify("Material approved");
+        notify("Material approved ✓");
         setPending(pending.filter((m) => m.id !== materialId));
       }
     } catch (err) {
@@ -42,16 +50,35 @@ export default function ReviewQueue({ notify }) {
   };
 
   const handleReject = async (materialId) => {
+    const canReject = permissionService.canPerformAction("REJECT_MATERIAL", user);
+    
+    if (!canReject.allowed) {
+      notify("Only maintainers and admins can reject materials");
+      return;
+    }
+
     try {
       const response = await maintainerService.rejectMaterial(materialId);
       if (response.ok) {
-        notify("Material rejected");
+        notify("Material rejected ✗");
         setPending(pending.filter((m) => m.id !== materialId));
       }
     } catch (err) {
       notify("Error rejecting material");
     }
   };
+
+  const canReview = permissionService.hasPermission("REVIEW_MATERIAL", user?.role);
+
+  if (!canReview) {
+    return (
+      <Card style={{ textAlign: "center", padding: "40px" }}>
+        <Lock size={40} style={{ marginBottom: "10px", opacity: 0.5 }} />
+        <p>You don't have permission to review materials</p>
+        <small>Only maintainers and admins can access this feature</small>
+      </Card>
+    );
+  }
 
   return (
     <div className="review-layout">

@@ -9,11 +9,15 @@ import {
   Activity,
   AlertCircle,
   ChevronRight,
+  Lock,
 } from "lucide-react";
+import { useOutletContext } from "react-router-dom";
 import { Card, PageHead, RevealGroup } from "../../../components/common/PagePrimitives";
 import { maintainerService } from "../../../services/api/maintainerService";
+import { permissionService } from "../../../services/auth/permissionService";
 
 export default function AdminDashboardPage() {
+  const { user } = useOutletContext();
   const [stats, setStats] = useState({
     activeStudents: 2482,
     upcomingEvents: 12,
@@ -23,9 +27,13 @@ export default function AdminDashboardPage() {
   const [moderationStats, setModerationStats] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const canAccess = permissionService.hasPermission("CREATE_ANNOUNCEMENT", user?.role);
+
   useEffect(() => {
-    loadStats();
-  }, []);
+    if (canAccess) {
+      loadStats();
+    }
+  }, [canAccess]);
 
   const loadStats = async () => {
     setLoading(true);
@@ -40,6 +48,25 @@ export default function AdminDashboardPage() {
       setLoading(false);
     }
   };
+
+  if (!canAccess) {
+    return (
+      <>
+        <PageHead
+          eyebrow="PLATFORM ADMINISTRATION"
+          title="Admin Dashboard"
+          desc="Platform management and moderation overview."
+        />
+        <Card style={{ textAlign: "center", padding: "60px 20px" }}>
+          <Lock size={50} style={{ marginBottom: "15px", opacity: 0.5 }} />
+          <h3 style={{ marginBottom: "5px" }}>Access Denied</h3>
+          <p style={{ color: "var(--gray)" }}>
+            Only system administrators can access this dashboard.
+          </p>
+        </Card>
+      </>
+    );
+  }
 
   const recentActivities = [
     { id: 1, action: "Material approved", subject: "Advanced Algorithms", time: "2 hours ago" },
