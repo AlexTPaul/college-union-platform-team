@@ -1,5 +1,5 @@
 import React from "react";
-import { Home, Megaphone, CalendarDays, ClipboardList, Droplets, BookOpen, GraduationCap, ShieldAlert, Newspaper, Map, Bell, UserRound, ShieldCheck, LogOut, X, Sparkles } from "lucide-react";
+import { Home, Megaphone, CalendarDays, ClipboardList, Droplets, BookOpen, GraduationCap, ShieldAlert, Newspaper, Map, Bell, UserRound, ShieldCheck, X, Sparkles } from "lucide-react";
 import { modules } from "../../data/demo/modules";
 
 export default function Sidebar({ page, go, open, close, role, user, onLogout }) {
@@ -13,6 +13,6 @@ export default function Sidebar({ page, go, open, close, role, user, onLogout })
     <nav>{modules.map(([key,label,Icon])=><button key={key} className={page===key?"active":""} onClick={()=>go(key)}><Icon size={18}/><span>{label}</span>{key==="notifications"&&<em>3</em>}</button>)}</nav>
     <div className="side-label">MANAGEMENT</div>
     <button className={"admin-link "+(role!=="student"?"visible":"")} onClick={()=>role!=="student"&&go(role==="maintainer"?"maintainer":"admin")}><ShieldCheck size={18}/><span>{role==="maintainer"?"Maintainer Console":"Admin Console"}</span></button>
-    <div className="sidebar-bottom"><div className="user-mini"><div className="avatar">{userInitials}</div><div><b>{userName}</b><small>{roleText}</small></div></div><button className="logout" onClick={onLogout}><LogOut size={17}/></button></div>
+    <div className="sidebar-bottom"><div className="user-mini"><div className="avatar">{userInitials}</div><div><b>{userName}</b><small>{roleText}</small></div></div></div>
   </aside>
 }

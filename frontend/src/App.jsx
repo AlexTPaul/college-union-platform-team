@@ -12,7 +12,7 @@ const defaultUser = {
 };
 
 export default function App() {
-  const [user, setUser] = useState(() => authService.getCurrentUserSync() || defaultUser);
+  const [user, setUser] = useState(() => authService.getCurrentUserSync());
 
   useEffect(() => {
     const unsubscribe = authService.onAuthStateChange((nextUser) => {
@@ -27,17 +27,12 @@ export default function App() {
   }, []);
 
   const handleLogin = (nextUser) => {
-    const safeUser = nextUser || defaultUser;
-    setUser(safeUser);
+    setUser(nextUser || null);
   };
 
   const handleLogout = async () => {
     await authService.logout();
     setUser(null);
-  };
-
-  const updateRole = (nextRole) => {
-    setUser((current) => (current ? { ...current, role: nextRole } : { ...defaultUser, role: nextRole }));
   };
 
   return (
@@ -46,7 +41,6 @@ export default function App() {
         user={user}
         onLogin={handleLogin}
         onLogout={handleLogout}
-        setRole={updateRole}
       />
     </BrowserRouter>
   );

@@ -28,7 +28,7 @@ function ProtectedRoute({ user }) {
   return <Outlet />;
 }
 
-export default function AppRoutes({ user, onLogin, onLogout, setRole }) {
+export default function AppRoutes({ user, onLogin, onLogout }) {
   const currentRole = user?.role || "student";
 
   return (
@@ -36,7 +36,7 @@ export default function AppRoutes({ user, onLogin, onLogout, setRole }) {
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage onLogin={onLogin} />} />
 
       <Route element={<ProtectedRoute user={user} />}>
-        <Route element={<StudentLayout user={user} role={currentRole} setRole={setRole} onLogout={onLogout} />}>
+        <Route element={<StudentLayout user={user} role={currentRole} onLogout={onLogout} />}>
           <Route path="/" element={<HomePage role={currentRole} user={user} />} />
           <Route path="/announcements" element={<AnnouncementsPage />} />
           <Route path="/events" element={<EventsPage />} />
@@ -48,7 +48,7 @@ export default function AppRoutes({ user, onLogin, onLogout, setRole }) {
           <Route path="/magazine" element={<MagazinePage />} />
           <Route path="/map" element={<UniversityMapPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/profile" element={<ProfilePage role={currentRole} />} />
+          <Route path="/profile" element={<ProfilePage role={currentRole} user={user} onLogout={onLogout} />} />
           <Route path="/maintainer" element={<AcademicMaintainerPage />} />
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />

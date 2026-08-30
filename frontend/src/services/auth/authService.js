@@ -24,13 +24,7 @@ export const authService = {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (!saved) {
-        return DEMO_MODE || !SUPABASE_URL ? normalizeUser({
-          id: "demo-user",
-          email: "demo@college.local",
-          role: "student",
-          name: "Aswin P.",
-          initials: "AP",
-        }) : null;
+        return null;
       }
 
       return normalizeUser(JSON.parse(saved));

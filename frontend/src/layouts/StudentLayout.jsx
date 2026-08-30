@@ -11,7 +11,7 @@ const labels = {
   "/admin":"Admin Console", "/admin/users":"Admin Users"
 };
 
-export default function StudentLayout({ user, role, setRole, onLogout }) {
+export default function StudentLayout({ user, role, onLogout }) {
   const [toast, setToast] = useState("");
   const notify = (msg) => { setToast(msg); setTimeout(() => setToast(""), 2200); };
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -38,11 +38,7 @@ export default function StudentLayout({ user, role, setRole, onLogout }) {
           <div className="top-actions">
             <label className="searchbox"><input placeholder="Search platform..." /></label>
             <button className="iconbtn" onClick={() => navigate("/notifications")}><Bell size={19} /><i>3</i></button>
-            <select className="role-select" value={role} onChange={(e) => setRole(e.target.value)}>
-              <option value="student">Student Demo</option>
-              <option value="maintainer">Academic Maintainer</option>
-              <option value="admin">Super Admin</option>
-            </select>
+            <div className="role-badge">{role === "admin" ? "Admin" : role === "maintainer" ? "Maintainer" : "Student"}</div>
           </div>
         </header>
         <div className="content"><Outlet context={{ go, notify, role, user }} /></div>
