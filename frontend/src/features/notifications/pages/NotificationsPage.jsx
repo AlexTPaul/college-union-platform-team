@@ -1,4 +1,106 @@
-import React from "react";
-import { Bell, CalendarDays, ClipboardList, GraduationCap, ShieldAlert } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Bell, CalendarDays, ClipboardList, GraduationCap, ShieldAlert, AlertCircle } from "lucide-react";
 import { Card, PageHead } from "../../../components/common/PagePrimitives";
-export default function Notifications(){return <><PageHead eyebrow="UPDATES" title="Notifications" desc="Your official UnionHub notification inbox." action={<button className="outline">Mark all read</button>}/><div className="notification-list">{[["Event registration closes tomorrow","Inter-Department Football · Sep 4","2 min ago",CalendarDays],["Grievance updated","GRV-2026-0142 is now Under Review","1 hr ago",ClipboardList],["New scholarship opportunity","National Merit Support Scholarship added","3 hr ago",GraduationCap],["Emergency notice","Water maintenance in Block C","Yesterday",ShieldAlert]].map((n,i)=>{const Icon=n[3]; return <Card className={i<2?"unread":""} key={i}><div className="notif"><div className="notif-icon">{React.createElement(n[3], {size:18})}</div><div><b>{n[0]}</b><p>{n[1]}</p><span>{n[2]}</span></div>{i<2&&<i className="unread-dot"/>}</div></Card>})}</div></>}
+import { notificationsService } from "../../../services/api/notificationsService";
+
+const iconMap = {
+  calendar: CalendarDays,
+  award: GraduationCap,
+  alert: ShieldAlert,
+  book: GraduationCap,
+  megaphone: Bell,
+};
+
+export default function NotificationsPage() {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    loadNotifications();
+  }, []);
+
+  const loadNotifications = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await notificationsService.getNotifications();
+      if (response.ok) {
+        setNotifications(response.data);
+      } else {
+        setError("Failed to load notifications");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      const response = await notificationsService.markAllAsRead();
+      if (response.ok) {
+        setNotifications(notifications.map((n) => ({ ...n, read: true })));
+      }
+    } catch (err) {
+      console.error("Error marking all as read");
+    }
+  };
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  return (
+    <>
+      <PageHead
+        eyebrow="UPDATES"
+        title="Notifications"
+        desc="Your official UnionHub notification inbox."
+        action={
+          <button className="outline" onClick={handleMarkAllRead} disabled={unreadCount === 0}>
+            Mark all read
+          </button>
+        }
+      />
+
+      {loading && <div className="loading-state">Loading notifications...</div>}
+
+      {error && (
+        <div className="error-state">
+          <AlertCircle size={20} />
+          <p>{error}</p>
+        </div>
+      )}
+
+      {!loading && notifications.length === 0 && (
+        <div className="empty-state">
+          <Bell size={40} />
+          <p>No notifications yet</p>
+        </div>
+      )}
+
+      {!loading && notifications.length > 0 && (
+        <div className="notification-list">
+          {notifications.map((n) => {
+            const IconComponent = iconMap[n.icon] || Bell;
+            return (
+              <Card className={!n.read ? "unread" : ""} key={n.id}>
+                <div className="notif">
+                  <div className="notif-icon">
+                    <IconComponent size={18} />
+                  </div>
+                  <div>
+                    <b>{n.title}</b>
+                    <p>{n.message}</p>
+                    <span>{n.timestamp}</span>
+                  </div>
+                  {!n.read && <i className="unread-dot" />}
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+}

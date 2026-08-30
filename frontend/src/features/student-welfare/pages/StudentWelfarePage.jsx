@@ -1,6 +1,134 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
-import { BriefcaseBusiness, ClipboardList, GraduationCap, Trophy, WalletCards, ChevronRight } from "lucide-react";
-import { welfare, opportunities } from "../../../data/demo";
+import {
+  BriefcaseBusiness,
+  ClipboardList,
+  GraduationCap,
+  Trophy,
+  WalletCards,
+  ChevronRight,
+  AlertCircle,
+} from "lucide-react";
 import { Card, PageHead, RevealGroup } from "../../../components/common/PagePrimitives";
-export default function Welfare(){ const {notify}=useOutletContext(); const [type,setType]=useState("all");const shown=type==="all"?opportunities:opportunities.filter(x=>x.type===type);return <><PageHead eyebrow="STUDENT WELFARE HUB" title="Opportunities for your next step" desc="Scholarships, internships, fellowships, exams and part-time opportunities."/><RevealGroup className="welfare-cats">{welfare.map(w=><button className={type===w.key?"active":""} onClick={()=>setType(w.key)} key={w.key}><w.icon size={19}/><b>{w.title}</b><span>{w.count} opportunities</span></button>)}</RevealGroup><div className="opps">{shown.map((o,i)=><Card key={i}><div className="opp-top"><span className="pill">{welfare.find(w=>w.key===o.type)?.title}</span><span className="deadline">Deadline {o.deadline}</span></div><h3>{o.title}</h3><p>{o.org}</p><div className="opp-meta"><span>{o.eligibility}</span><span>{o.mode}</span></div><button className="outline full" onClick={()=>notify("Demo: official source opened")}>View official source <ChevronRight size={14}/></button></Card>)}</div></>}
+import { welfareService } from "../../../services/api/welfareService";
+
+export default function StudentWelfarePage() {
+  const { notify } = useOutletContext();
+  const [type, setType] = useState("all");
+  const [welfare, setWelfare] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    loadWelfare();
+  }, []);
+
+  const loadWelfare = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await welfareService.getWelfarePlatforms();
+      if (response.ok) {
+        setWelfare(response.data);
+      } else {
+        setError("Failed to load welfare opportunities");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const categoryIcons = {
+    scholarship: GraduationCap,
+    "financial-aid": WalletCards,
+    hostel: Trophy,
+    sports: Trophy,
+    career: BriefcaseBusiness,
+  };
+
+  const categories = welfareService.getCategories();
+  const shown =
+    type === "all"
+      ? welfare
+      : welfare.filter((x) => x.category === type);
+
+  const categoryCount = (cat) => welfare.filter((x) => x.category === cat).length;
+
+  return (
+    <>
+      <PageHead
+        eyebrow="STUDENT WELFARE HUB"
+        title="Opportunities for your next step"
+        desc="Scholarships, internships, fellowships, exams and part-time opportunities."
+      />
+
+      <RevealGroup className="welfare-cats">
+        <button
+          className={type === "all" ? "active" : ""}
+          onClick={() => setType("all")}
+        >
+          <Trophy size={19} />
+          <b>All opportunities</b>
+          <span>{welfare.length} total</span>
+        </button>
+        {categories.map((cat) => {
+          const Icon = categoryIcons[cat.id] || GraduationCap;
+          return (
+            <button
+              className={type === cat.id ? "active" : ""}
+              onClick={() => setType(cat.id)}
+              key={cat.id}
+            >
+              <Icon size={19} />
+              <b>{cat.label}</b>
+              <span>{categoryCount(cat.id)} opportunities</span>
+            </button>
+          );
+        })}
+      </RevealGroup>
+
+      {loading && <div className="loading-state">Loading opportunities...</div>}
+
+      {error && (
+        <div className="error-state">
+          <AlertCircle size={20} />
+          <p>{error}</p>
+        </div>
+      )}
+
+      {!loading && shown.length === 0 && (
+        <div className="empty-state">
+          <Trophy size={40} />
+          <p>No opportunities available in this category</p>
+        </div>
+      )}
+
+      {!loading && shown.length > 0 && (
+        <div className="opps">
+          {shown.map((o) => (
+            <Card key={o.id}>
+              <div className="opp-top">
+                <span className="pill">{o.category}</span>
+                <span className="deadline">Deadline {o.deadline}</span>
+              </div>
+              <h3>{o.title}</h3>
+              <p>{o.description}</p>
+              <div className="opp-meta">
+                <span>{o.eligibility}</span>
+                <span>{o.applicants} applied</span>
+              </div>
+              <button
+                className="outline full"
+                onClick={() => notify(`${o.title} details`)}
+              >
+                View opportunity <ChevronRight size={14} />
+              </button>
+            </Card>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}

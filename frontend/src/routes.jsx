@@ -1,6 +1,7 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import StudentLayout from "./layouts/StudentLayout";
+import LoginPage from "./features/auth/pages/LoginPage";
 import HomePage from "./features/home/pages/HomePage";
 import AnnouncementsPage from "./features/announcements/pages/AnnouncementsPage";
 import EventsPage from "./features/events/pages/EventsPage";
@@ -17,24 +18,43 @@ import AcademicMaintainerPage from "./features/academic-maintainer/pages/Academi
 import AdminDashboardPage from "./features/admin/pages/AdminDashboardPage";
 import AdminUsersPage from "./features/admin/pages/AdminUsersPage";
 
-export default function AppRoutes({role,setRole}) {
-  return <Routes>
-    <Route element={<StudentLayout role={role} setRole={setRole}/>}>
-      <Route path="/" element={<HomePage role={role}/>} />
-      <Route path="/announcements" element={<AnnouncementsPage/>}/>
-      <Route path="/events" element={<EventsPage/>}/>
-      <Route path="/grievances" element={<GrievancesPage/>}/>
-      <Route path="/blood" element={<BloodBankPage/>}/>
-      <Route path="/academics" element={<AcademicsPage role={role}/>}/>
-      <Route path="/welfare" element={<StudentWelfarePage/>}/>
-      <Route path="/emergency" element={<EmergencyPage/>}/>
-      <Route path="/magazine" element={<MagazinePage/>}/>
-      <Route path="/map" element={<UniversityMapPage/>}/>
-      <Route path="/notifications" element={<NotificationsPage/>}/>
-      <Route path="/profile" element={<ProfilePage role={role}/>}/>
-      <Route path="/maintainer" element={<AcademicMaintainerPage/>}/>
-      <Route path="/admin" element={<AdminDashboardPage/>}/>
-      <Route path="/admin/users" element={<AdminUsersPage/>}/>
-    </Route>
-  </Routes>
+function ProtectedRoute({ user }) {
+  const location = useLocation();
+
+  if (!user) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  return <Outlet />;
 }
+
+export default function AppRoutes({ user, onLogin, onLogout, setRole }) {
+  const currentRole = user?.role || "student";
+
+  return (
+    <Routes>
+      <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage onLogin={onLogin} />} />
+
+      <Route element={<ProtectedRoute user={user} />}>
+        <Route element={<StudentLayout user={user} role={currentRole} setRole={setRole} onLogout={onLogout} />}>
+          <Route path="/" element={<HomePage role={currentRole} user={user} />} />
+          <Route path="/announcements" element={<AnnouncementsPage />} />
+          <Route path="/events" element={<EventsPage />} />
+          <Route path="/grievances" element={<GrievancesPage />} />
+          <Route path="/blood" element={<BloodBankPage />} />
+          <Route path="/academics" element={<AcademicsPage role={currentRole} />} />
+          <Route path="/welfare" element={<StudentWelfarePage />} />
+          <Route path="/emergency" element={<EmergencyPage />} />
+          <Route path="/magazine" element={<MagazinePage />} />
+          <Route path="/map" element={<UniversityMapPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/profile" element={<ProfilePage role={currentRole} />} />
+          <Route path="/maintainer" element={<AcademicMaintainerPage />} />
+          <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/admin/users" element={<AdminUsersPage />} />
+        </Route>
+      </Route>
+    </Routes>
+  );
+}
+
