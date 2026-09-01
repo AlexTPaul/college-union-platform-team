@@ -122,6 +122,7 @@ export default function GrievancesPage() {
     setGrievances((prev) => [newG, ...prev]);
   };
 
+
   // derive unique users for filter
   const uniqueUsers = [...new Set(grievances.map((g) => g.submittedBy).filter(Boolean))];
 
